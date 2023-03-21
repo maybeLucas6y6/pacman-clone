@@ -1,43 +1,20 @@
-#include "Screen.h"
-#include "Pacman.h"
-#include "Ghost.h"
-
-#define HALFGRAY CLITERAL(Color){ 130, 130, 130, 100 }
-bool debugging = false;
+#include <iostream>
+#include <raylib.h>
+#include "Vector2.hpp"
 
 int main() {
-	InitWindow(wWidth, wHeight, "Pacman");
-	ClearWindowState(FLAG_WINDOW_RESIZABLE);
-	LoadMap("resources/tilemap.png");
+	const int rows = 36, cols = 28, cellSize = 16;
 
-	Pacman player("resources/pacman.png", MapToScreen({ 26,13 }));
-	Ghost Blinky("resources/ghosts.png", MapToScreen({ 14,13 }));
+	InitWindow(cols * cellSize, rows * cellSize, "Pacman");
+	ClearWindowState(FLAG_WINDOW_RESIZABLE);
 
 	while (!WindowShouldClose()) {
-		deltaTime = GetFrameTime();
-		if (!pause) {
-			player.Move();
-			Blinky.Move();
-		}
-		if (panic > 0) {
-			panic -= deltaTime;
-		}
-		if (IsKeyPressed((int)KeyboardKey::KEY_G)) debugging = !debugging;
-
 		BeginDrawing();
+
 		ClearBackground(BLACK);
-
-		if (debugging) WriteMousePosition(GetMousePosition());
-
-		if (debugging) DrawGrid2D(36, 28, HALFGRAY);
-		RenderMap();
-		if (debugging) DrawRectangles(walls);
-
-		player.Render(debugging);
-		Blinky.Render(debugging);
 
 		EndDrawing();
 	}
-	UnloadMap();
+
 	CloseWindow();
 }
