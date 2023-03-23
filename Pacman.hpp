@@ -11,23 +11,20 @@ private:
 	Node* currentNode;
 	Node* targetNode;
 	vector2 direction;
-	bool normal = true; // don t forget to delete this
 	bool OvershotTarget() {
 		if (targetNode) {
 			vector2 start2dest = targetNode->Position() - currentNode->Position();
 			vector2 pos2dest = position - currentNode->Position();
 			return pos2dest.magnitudeSquared() >= start2dest.magnitudeSquared();
 		}
-		else {
-			return false; // change this ???
-		}
+		return false; // change this ???
 	}
-	bool IsDirectionValid(vector2& direction) {
-		if (direction == vector2::Up() && (*currentNode).ngh.Up) { targetNode = currentNode->ngh.Up; return true; }
-		else if (direction == vector2::Right() && (*currentNode).ngh.Right) { targetNode = currentNode->ngh.Right; return true; }
-		else if (direction == vector2::Down() && (*currentNode).ngh.Down) { targetNode = currentNode->ngh.Down; return true; }
-		else if (direction == vector2::Left() && (*currentNode).ngh.Left) { targetNode = currentNode->ngh.Left; return true; }
-		else { targetNode = currentNode; return false; }
+	Node* GetNewTarget(vector2& direction, Node* node) {
+		if (direction == vector2::Up() && node->ngh.Up) { return node->ngh.Up; }
+		else if (direction == vector2::Right() && node->ngh.Right) { return node->ngh.Right; }
+		else if (direction == vector2::Down() && node->ngh.Down) { return node->ngh.Down; }
+		else if (direction == vector2::Left() && node->ngh.Left) { return node->ngh.Left; }
+		else { return nullptr; }
 	}
 	vector2 GetNewDirection() const {
 		auto key = GetKeyPressed();
@@ -45,71 +42,50 @@ public:
 		currentNode{ startNode },
 		targetNode{ startNode },
 		direction{} {
-		speed = 10.;
+		speed = 75.;
 	}
 	void Move(float deltaTime) {
-		normal = true;
 		position = position + (direction * speed * deltaTime); 
 		vector2 newDirection{ GetNewDirection() };
-		if (targetNode->Position().equal(position, 10.)) {
-			normal = false;
-			SetNewTarget(newDirection);
-			if (targetNode != currentNode) {
-				direction = newDirection;
-			}
-			else {
-				SetNewTarget(direction);
-			}
-			if (targetNode == currentNode) {
-				direction = vector2::Zero();
-			}
-			position = currentNode->Position();
-		}
-		else {
-			if (currentNode->Position().equal(position, 10.)) {
-				normal = false;
-				currentNode = targetNode;
-				SetNewTarget(newDirection);
-				if (targetNode != currentNode) {
-					direction = newDirection;
-				}
-				else {
-					SetNewTarget(direction);
-				}
-				if (targetNode == currentNode) {
-					direction = vector2::Zero();
-				}
-				position = currentNode->Position();
-			}
+		if (direction != 0 && newDirection == direction * -1) {
+			direction = direction * -1;
+			std::swap(currentNode, targetNode);
 		}
 		if (OvershotTarget()) {
-			normal = false; 
 			currentNode = targetNode;
-			SetNewTarget(newDirection);
-			if (targetNode != currentNode) {
-				direction = newDirection;
-			}
-			else {
-				SetNewTarget(direction);
-			}
-			if (targetNode == currentNode) {
+			position = currentNode->Position();
+			Node* newTarget = GetNewTarget(direction, currentNode);
+			if (newTarget == nullptr) {
 				direction = vector2::Zero();
 			}
-			position = currentNode->Position();
+			else {
+				targetNode = newTarget;
+			}
 		}
-		else {
-			if (direction != 0 && newDirection == direction * -1) {
-				direction = direction * -1;
-				std::swap(currentNode, targetNode);
+		if (newDirection == vector2::Zero() || direction == newDirection) {
+			return;
+		}
+		if (targetNode->Position().equal(position, 10.)) {
+			Node* newTarget = GetNewTarget(newDirection, targetNode);
+			if (newTarget != nullptr) {
+				currentNode = targetNode;
+				targetNode = newTarget;
+				direction = newDirection;
+				position = currentNode->Position();
+				return;
+			}
+		}
+		if (currentNode->Position().equal(position, 10.)) {
+			Node* newTarget = GetNewTarget(newDirection, currentNode);
+			if (newTarget != nullptr) {
+				targetNode = newTarget;
+				direction = newDirection;
+				position = currentNode->Position();
+				return;
 			}
 		}
 	}
 	void Render() {
-		if (normal) {
-			DrawCircle(position.x, position.y, 10., YELLOW);
-		}
-		else {
-			DrawCircle(position.x, position.y, 10., RED);
-		}
+		DrawCircle(position.x, position.y, 10., YELLOW);
 	}
 };
