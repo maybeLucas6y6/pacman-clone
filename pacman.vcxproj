@@ -158,7 +158,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Ghost.h" />
+    <ClInclude Include="Node.hpp" />
     <ClInclude Include="Pacman.h" />
+    <ClInclude Include="Pacman.hpp" />
     <ClInclude Include="Screen.h" />
     <ClInclude Include="Vector2.hpp" />
   </ItemGroup>

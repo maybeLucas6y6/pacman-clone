@@ -4,17 +4,16 @@
 #include <iostream>
 
 class vector2 {
-private:
-	float x, y;
 public:
-	vector2(float x, float y) {
-		this->x = x;
-		this->y = y;
+	float x, y;
+	vector2(float x = 0., float y = 0.) : 
+		x{ x }, y{ y } {
+		
 	}
-	vector2 operator + (vector2& vec) {
+	vector2 operator + (const vector2& vec) {
 		return { x + vec.x, y + vec.y };
 	}
-	vector2 operator - (vector2& vec) {
+	vector2 operator - (const vector2& vec) {
 		return { x - vec.x, y - vec.y };
 	}
 	vector2 operator + (float scalar) {
@@ -30,7 +29,15 @@ public:
 		if(scalar != 0)
 			return { x / scalar, y / scalar };
 	}
-	bool equal(vector2& vec, float thresh) {
+	bool operator == (const vector2& vec) {
+		return x == vec.x && y == vec.y;
+		//return equal(vec, 0.0001f);
+	}
+	bool operator != (const vector2& vec) {
+		return x != vec.x || y != vec.y;
+		//return !equal(vec, 0.0001f);
+	}
+	bool equal(const vector2& vec, float thresh) const {
 		if (fabs(x - vec.x) <= thresh) {
 			if (fabs(y - vec.y) <= thresh) {
 				return true;
@@ -38,15 +45,30 @@ public:
 		}
 		return false;
 	}
-	float magnitudeSquared() {
+	float magnitudeSquared() const  {
 		return x * x + y * y;
 	}
-	float magnitude() {
+	float magnitude() const  {
 		return sqrtf(magnitudeSquared());
 	}
+	// TODO: return as tuple
 	friend std::ostream& operator << (std::ostream& os, vector2 const& vec) {
 		os << "x: " << vec.x << " y: " << vec.y << "\n";
 		return os;
 	}
-	// TODO: return as tuple
+	static vector2 Up() {
+		return { 0,-1 };
+	}
+	static vector2 Right() {
+		return { 1,0 };
+	}
+	static vector2 Down() {
+		return { 0,1 };
+	}
+	static vector2 Left() {
+		return { -1,0 };
+	}
+	static vector2 Zero() {
+		return { 0,0 };
+	}
 };
