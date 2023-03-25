@@ -8,44 +8,55 @@ class Pacman {
 private:
 	vector2 position;
 	float speed;
+	float actualSpeed;
 	Node* currentNode;
 	Node* targetNode;
 	vector2 direction;
+	vector2 turnDirection;
 	bool OvershotTarget() {
-		if (targetNode) {
+		if (targetNode != nullptr) {
 			vector2 start2dest = targetNode->Position() - currentNode->Position();
 			vector2 pos2dest = position - currentNode->Position();
 			return pos2dest.magnitudeSquared() >= start2dest.magnitudeSquared();
 		}
 		return false; // change this ???
 	}
-	Node* GetNewTarget(vector2& direction, Node* node) {
+	Node* GetNewTarget(vector2& direction, Node* node) const {
+		if (node == nullptr) return nullptr;
 		if (direction == vector2::Up() && node->ngh.Up) { return node->ngh.Up; }
-		else if (direction == vector2::Right() && node->ngh.Right) { return node->ngh.Right; }
-		else if (direction == vector2::Down() && node->ngh.Down) { return node->ngh.Down; }
-		else if (direction == vector2::Left() && node->ngh.Left) { return node->ngh.Left; }
-		else { return nullptr; }
+		if (direction == vector2::Right() && node->ngh.Right) { return node->ngh.Right; }
+		if (direction == vector2::Down() && node->ngh.Down) { return node->ngh.Down; }
+		if (direction == vector2::Left() && node->ngh.Left) { return node->ngh.Left; }
+		return nullptr;
 	}
 	vector2 GetNewDirection() const {
-		auto key = GetKeyPressed();
-		switch (key) {
-			case KeyboardKey::KEY_W: return vector2::Up();
-			case KeyboardKey::KEY_D: return vector2::Right();
-			case KeyboardKey::KEY_S: return vector2::Down();
-			case KeyboardKey::KEY_A: return vector2::Left();
-			default: return vector2::Zero();
-		}
+		if (IsKeyDown(KeyboardKey::KEY_W)) return vector2::Up();
+		if (IsKeyDown(KeyboardKey::KEY_D)) return vector2::Right();
+		if (IsKeyDown(KeyboardKey::KEY_S)) return vector2::Down();
+		if (IsKeyDown(KeyboardKey::KEY_A)) return vector2::Left();
+		return vector2::Zero();
 	}
 public:
 	Pacman(Node* startNode) :
 		position{ startNode->Position() },
 		currentNode{ startNode },
 		targetNode{ startNode },
-		direction{} {
+		direction{},
+		turnDirection{} {
 		speed = 75.;
+		actualSpeed = 0;
 	}
 	void Move(float deltaTime) {
-		position = position + (direction * speed * deltaTime); 
+		actualSpeed = speed * deltaTime;
+		if (actualSpeed > 0.02) actualSpeed = 0.02;
+		position = position + ((direction + turnDirection) * actualSpeed);
+		if (turnDirection != vector2::Zero()) {
+			if (position.equalOr(targetNode->Position(), 0.02)) {
+				direction = turnDirection;
+				turnDirection = vector2::Zero();
+			}
+			return;
+		}
 		vector2 newDirection{ GetNewDirection() };
 		if (direction != 0 && newDirection == direction * -1) {
 			direction = direction * -1;
@@ -65,23 +76,22 @@ public:
 		if (newDirection == vector2::Zero() || direction == newDirection) {
 			return;
 		}
-		if (targetNode->Position().equal(position, 10.)) {
+		float position2target = vector2::Distance(position, targetNode->Position());
+		if (position2target <= 6.) {
 			Node* newTarget = GetNewTarget(newDirection, targetNode);
 			if (newTarget != nullptr) {
 				currentNode = targetNode;
 				targetNode = newTarget;
-				direction = newDirection;
-				position = currentNode->Position();
-				return;
+				turnDirection = newDirection;
 			}
 		}
-		if (currentNode->Position().equal(position, 10.)) {
+		float position2current = vector2::Distance(position, currentNode->Position());
+		if (position2current <= 4.) {
 			Node* newTarget = GetNewTarget(newDirection, currentNode);
 			if (newTarget != nullptr) {
 				targetNode = newTarget;
-				direction = newDirection;
-				position = currentNode->Position();
-				return;
+				direction = direction * -1;
+				turnDirection = newDirection;
 			}
 		}
 	}

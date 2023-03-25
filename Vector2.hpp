@@ -10,10 +10,10 @@ public:
 		x{ x }, y{ y } {
 		
 	}
-	vector2 operator + (const vector2& vec) {
+	vector2 operator + (vector2 vec) {
 		return { x + vec.x, y + vec.y };
 	}
-	vector2 operator - (const vector2& vec) {
+	vector2 operator - (vector2 vec) {
 		return { x - vec.x, y - vec.y };
 	}
 	vector2 operator + (float scalar) {
@@ -22,6 +22,12 @@ public:
 	vector2 operator - (float scalar) {
 		return { x - scalar, y - scalar };
 	}
+	vector2 operator * (vector2 vec) {
+		return { x * vec.x, y * vec.y };
+	}
+	vector2 operator / (vector2 vec) {
+		return { x / vec.x, y / vec.y };
+	}
 	vector2 operator * (float scalar) {
 		return { x * scalar, y * scalar };
 	}
@@ -29,21 +35,19 @@ public:
 		if(scalar != 0)
 			return { x / scalar, y / scalar };
 	}
-	bool operator == (const vector2& vec) {
+	bool operator == (vector2 vec) {
 		return x == vec.x && y == vec.y;
-		//return equal(vec, 0.0001f);
 	}
-	bool operator != (const vector2& vec) {
+	bool operator != (vector2 vec) {
 		return x != vec.x || y != vec.y;
-		//return !equal(vec, 0.0001f);
 	}
-	bool equal(const vector2& vec, float thresh) const {
-		if (fabs(x - vec.x) <= thresh) {
-			if (fabs(y - vec.y) <= thresh) {
-				return true;
-			}
-		}
-		return false;
+	bool equalAnd(const vector2& vec, float thresh) const {
+		if (fabsf(x - vec.x) <= thresh && fabsf(y - vec.y) <= thresh) return true;
+		else return false;
+	}
+	bool equalOr(const vector2& vec, float thresh) const {
+		if (fabsf(x - vec.x) <= thresh || fabsf(y - vec.y) <= thresh) return true;
+		else return false;
 	}
 	float magnitudeSquared() const  {
 		return x * x + y * y;
@@ -70,5 +74,16 @@ public:
 	}
 	static vector2 Zero() {
 		return { 0,0 };
+	}
+	static float Distance(vector2 a, vector2 b) {
+		return sqrtf((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
+	}
+
+	// not necessary
+	Vector2 RaylibVector2() {
+		return { x, y };
+	}
+	static vector2 AdditionResult(vector2 a, vector2 b, vector2 origin = vector2::Zero()) {
+		return { 2 * (a.x + b.x) - origin.x, 2 * (a.y + b.y) - origin.y };
 	}
 };

@@ -25,7 +25,7 @@ public:
 		if (ngh.Down) DrawLine(position.x, position.y, ngh.Down->position.x, ngh.Down->position.y, GRAY);
 		if (ngh.Left) DrawLine(position.x, position.y, ngh.Left->position.x, ngh.Left->position.y, GRAY);
 	}
-	vector2 Position() {
+	vector2 Position() const {
 		return position;
 	}
 };
